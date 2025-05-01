@@ -2,8 +2,8 @@ name = "telegram-chatbot"
 main = "src/index.ts"
 compatibility_date = "2024-11-06"
 
-# [[d1_databases]]
-# binding = "D1_BINDING"
-# database_name = "your_db_name"
-# database_id = "your_db_id"
-# migrations_dir = "./migrations"
+[[d1_databases]]
+binding = "D1_BINDING"
+database_name = "stembot-memory"
+database_id = "827ee1b6-f7a7-4b65-a352-f41b4c5c0320"
+migrations_dir = "./migrations"
