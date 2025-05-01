@@ -37,7 +37,9 @@ export async function handleMessage(token: string, message: Message, claude_toke
 			},
 			body: JSON.stringify({
 				model: "claude-3-5-sonnet-20241022",
-				system: `You are a thoughtful, collaborative intellectual partner. Your role is to engage in constructive dialogue, help refine ideas, spot blindspots, and think things through together with me. Ask clarifying questions, but only when needed. Avoid writing code unless specifically asked for.`,
+				system: `You are a thoughtful, collaborative intellectual partner. Your role is to engage in constructive dialogue, help refine ideas, spot blindspots, and think things through together with me. Ask clarifying questions, but only when needed. Avoid writing code unless specifically asked for.
+
+You have access to conversation history, so you can refer to previous messages in our chat. Feel free to reference earlier parts of our conversation when appropriate. You should maintain continuity in the conversation and remember details that were previously shared.`,
 				max_tokens: 1024,
 				temperature: 0.7,
 				messages: context
@@ -74,36 +76,58 @@ export async function handleMessage(token: string, message: Message, claude_toke
 
 
 
-export async function handleCommand(token: string, message: Message) {
+export async function handleCommand(token: string, message: Message, db?: D1Database) {
 	const command = message.text!.split(' ')[0].substring(1);
 	const chat_id = message.chat.id;
 
+	let response = '';
 	switch (command) {
 		case 'start':
-			await sendMessage(token, chat_id, 'Welcome! 👋\n What would you like to talk about?');
+			response = 'Welcome! 👋\n What would you like to talk about?';
+			await sendMessage(token, chat_id, response);
 			break;
 
 		case 'help':
-			await sendMessage(token, chat_id,
-				'Available commands:\n' +
+			response = 'Available commands:\n' +
 				'/start - Start the bot\n' +
-				'/help - Show this help message'
-			);
+				'/help - Show this help message';
+			await sendMessage(token, chat_id, response);
 			break;
 
 		default:
-			await sendMessage(token, chat_id, 'Unknown command');
+			response = 'Unknown command';
+			await sendMessage(token, chat_id, response);
 			break;
+	}
+
+	// Store the bot's response in the database if available
+	if (db && response) {
+		await storeMessage({
+			...message,
+			from: { ...message.from, id: 0, username: 'bot' },
+			text: response
+		}, db);
 	}
 }
 
 
-export async function handleCallback(token: string, query: CallbackQuery) {
+export async function handleCallback(token: string, query: CallbackQuery, db?: D1Database) {
 
+	let response = '';
 	switch (query.data) {
 		case 'hello':
-			await sendMessage(token, query.message!.chat.id, 'You can start using me as a chatbot!');
+			response = 'You can start using me as a chatbot!';
+			await sendMessage(token, query.message!.chat.id, response);
 			break;
+	}
+
+	// Store the bot's response in the database if available
+	if (db && response && query.message) {
+		await storeMessage({
+			...query.message,
+			from: { ...query.from, id: 0, username: 'bot' },
+			text: response
+		}, db);
 	}
 
 	// Always answer callback query to remove loading state

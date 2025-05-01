@@ -22,11 +22,11 @@ export async function telegramBotHandler(req: Request, env: Env) {
 
 
 		if (update.callback_query) {
-			await handleCallback(env.BOT_TOKEN, update.callback_query);
+			await handleCallback(env.BOT_TOKEN, update.callback_query, env.D1_BINDING);
 		}
 
 		else if (update.message?.text?.startsWith('/')) {
-			await handleCommand(env.BOT_TOKEN, update.message);
+			await handleCommand(env.BOT_TOKEN, update.message, env.D1_BINDING);
 		}
 
 		else if (update.message?.text) {
